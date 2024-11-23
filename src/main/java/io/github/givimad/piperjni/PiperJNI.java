@@ -45,6 +45,7 @@ public class PiperJNI implements AutoCloseable {
 
     /**
      * Creates a new Piper instance.
+     *
      * @throws IOException if library registration fails
      */
     public PiperJNI() throws IOException {
@@ -64,6 +65,7 @@ public class PiperJNI implements AutoCloseable {
     /**
      * Initializes the piper instance configuration.
      * Should be called before using the instance.
+     *
      * @throws IOException if initialization fails.
      */
     public void initialize() throws IOException {
@@ -73,11 +75,12 @@ public class PiperJNI implements AutoCloseable {
     /**
      * Initializes the piper instance configuration.
      * Should be called before using the instance.
+     *
      * @param useESpeakPhonemes Support voices with ESpeak phonemes.
-     * @param useTashkeelModel Support voices using the Tashkeel model.
+     * @param useTashkeelModel  Support voices using the Tashkeel model.
      * @throws IOException if initialization fails.
      */
-    public void initialize(boolean useESpeakPhonemes, boolean useTashkeelModel) throws IOException {
+    public void initialize(final boolean useESpeakPhonemes, final boolean useTashkeelModel) throws IOException {
         assertRegistered();
         terminate();
         PiperConfig config = new PiperConfig(this);
@@ -114,7 +117,8 @@ public class PiperJNI implements AutoCloseable {
      * @throws FileNotFoundException if models or config doesn't exist
      * @throws NotInitialized        if piper was not initialized
      */
-    public PiperVoice loadVoice(Path modelPath, Path modelConfigPath) throws IOException, NotInitialized {
+    public PiperVoice loadVoice(final Path modelPath,
+                                final Path modelConfigPath) throws IOException, NotInitialized {
         return loadVoice(modelPath, modelConfigPath, -1, false);
     }
 
@@ -128,7 +132,9 @@ public class PiperJNI implements AutoCloseable {
      * @throws FileNotFoundException if models or config doesn't exist
      * @throws NotInitialized        if piper was not initialized
      */
-    public PiperVoice loadVoice(Path modelPath, Path modelConfigPath, long speakerId) throws IOException, NotInitialized {
+    public PiperVoice loadVoice(final Path modelPath,
+                                final Path modelConfigPath,
+                                final long speakerId) throws IOException, NotInitialized {
         return loadVoice(modelPath, modelConfigPath, speakerId, false);
     }
 
@@ -142,7 +148,9 @@ public class PiperJNI implements AutoCloseable {
      * @throws FileNotFoundException if models or config doesn't exist
      * @throws NotInitialized        if piper was not initialized
      */
-    public PiperVoice loadVoice(Path modelPath, Path modelConfigPath, boolean useCUDA) throws IOException, NotInitialized {
+    public PiperVoice loadVoice(final Path modelPath,
+                                final Path modelConfigPath,
+                                final boolean useCUDA) throws IOException, NotInitialized {
         return loadVoice(modelPath, modelConfigPath, -1, useCUDA);
     }
 
@@ -157,7 +165,10 @@ public class PiperJNI implements AutoCloseable {
      * @throws FileNotFoundException if models or config doesn't exist
      * @throws NotInitialized        if piper was not initialized
      */
-    public PiperVoice loadVoice(Path modelPath, Path modelConfigPath, long speakerId, boolean useCUDA) throws FileNotFoundException, NotInitialized {
+    public PiperVoice loadVoice(final Path modelPath,
+                                final Path modelConfigPath,
+                                final long speakerId,
+                                final boolean useCUDA) throws FileNotFoundException, NotInitialized {
         assertRegistered();
         assertInitialized();
         if (modelPath == null || !Files.exists(modelPath) || Files.isDirectory(modelPath)) {
@@ -171,29 +182,35 @@ public class PiperJNI implements AutoCloseable {
 
     /**
      * Convert text to audio using the provided voice.
+     *
      * @param voice {@link PiperVoice} instance to use.
-     * @param text Text to speak.
+     * @param text  Text to speak.
      * @return The audio samples
-     * @throws IOException If generation fails.
+     * @throws IOException    If generation fails.
      * @throws NotInitialized If piper not initialized.
      */
-    public short[] textToAudio(PiperVoice voice, String text) throws IOException, NotInitialized {
+    public short[] textToAudio(final PiperVoice voice, final String text) throws IOException, NotInitialized {
         return textToAudioImpl(voice, text, null);
     }
 
     /**
      * Convert text to audio using the provided voice and emit segments asynchronously.
-     * @param voice {@link PiperVoice} instance to use.
-     * @param text Text to speak.
+     *
+     * @param voice         {@link PiperVoice} instance to use.
+     * @param text          Text to speak.
      * @param audioCallback Callback for each audio segment.
-     * @throws IOException If generation fails.
+     * @throws IOException    If generation fails.
      * @throws NotInitialized If piper not initialized.
      */
-    public void textToAudio(PiperVoice voice, String text, AudioCallback audioCallback) throws IOException, NotInitialized {
+    public void textToAudio(final PiperVoice voice,
+                            final String text,
+                            final AudioCallback audioCallback) throws IOException, NotInitialized {
         textToAudioImpl(voice, text, audioCallback);
     }
 
-    private short[] textToAudioImpl(PiperVoice voice, String text, AudioCallback audioCallback) throws IOException, NotInitialized {
+    private short[] textToAudioImpl(final PiperVoice voice,
+                                    final String text,
+                                    final AudioCallback audioCallback) throws IOException, NotInitialized {
         assertRegistered();
         assertInitialized();
         if (voice == null) {
@@ -298,6 +315,7 @@ public class PiperJNI implements AutoCloseable {
     public interface AudioCallback {
         /**
          * Called once on each generated voice segment.
+         *
          * @param audioSamples The segment samples.
          */
         void onAudio(short[] audioSamples);
