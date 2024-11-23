@@ -78,6 +78,8 @@ export VOICE_MODEL=/test-data/es_ES-sharvard-medium.onnx
 export VOICE_MODEL_CONFIG=/test-data/es_ES-sharvard-medium.onnx.json
 # Text to speak
 export TEXT_TO_SPEAK="Buenos días"
+# multiplication for the spoken text 
+export TEXT_SPEED = "1.0"
 # tests will generate test.wav in the root dir.
 mvn test
 ```
