@@ -81,8 +81,8 @@ public class NativeUtils {
         }
 
         // Obtain filename from path
-        String[] parts = path.split("/");
-        String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
+        final String[] parts = path.split("/");
+        final String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
 
         // Check if the filename is okay
         if (filename == null || filename.length() < MIN_PREFIX_LENGTH) {
@@ -95,7 +95,7 @@ public class NativeUtils {
             temporaryDir.deleteOnExit();
         }
 
-        File temp = new File(temporaryDir, filename);
+        final File temp = new File(temporaryDir, filename);
 
         try (InputStream is = NativeUtils.class.getResourceAsStream(path)) {
             Files.copy(is, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -133,11 +133,12 @@ public class NativeUtils {
     }
 
     private static File createTempDirectory(final String prefix) throws IOException {
-        String tempDir = System.getProperty("java.io.tmpdir");
-        File generatedDir = new File(tempDir, prefix + System.nanoTime());
+        final String tempDir = System.getProperty("java.io.tmpdir");
+        final File generatedDir = new File(tempDir, prefix + System.nanoTime());
 
-        if (!generatedDir.mkdir())
+        if (!generatedDir.mkdir()){
             throw new IOException("Failed to create temp directory " + generatedDir.getName());
+        }
 
         return generatedDir;
     }
