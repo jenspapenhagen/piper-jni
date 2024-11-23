@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.naming.ConfigurationException;
 import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.io.ByteArrayInputStream;
@@ -33,7 +34,7 @@ public class PiperJNITest {
 
     @Test
     public void getPiperVersion() {
-        var version = piper.getPiperVersion();
+        final String version = piper.getPiperVersion();
         assertNotNull(version, "vad mode configured");
         System.out.println("Piper version: " + version);
     }
@@ -72,6 +73,7 @@ public class PiperJNITest {
         final String voiceModel = System.getenv("VOICE_MODEL");
         final String voiceModelConfig = System.getenv("VOICE_MODEL_CONFIG");
         final String textToSpeak = System.getenv("TEXT_TO_SPEAK");
+        final String textSpeed = System.getenv().getOrDefault("TEXT_SPEED", "1.0");
         if (voiceModel == null || voiceModel.isBlank()) {
             throw new ConfigurationException("env var VOICE_MODEL is required");
         }
@@ -88,7 +90,7 @@ public class PiperJNITest {
                 final int sampleRate = voice.getSampleRate();
                 final short[] samples = piper.textToAudio(voice, textToSpeak);
                 assertNotEquals(0, samples.length);
-                createWAVFile(List.of(samples), sampleRate, Path.of("test.wav"));
+                createWAVFile(List.of(samples), sampleRate, Path.of("test.wav"), textSpeed);
             }
         } finally {
             piper.terminate();
@@ -100,6 +102,7 @@ public class PiperJNITest {
         final String voiceModel = System.getenv("VOICE_MODEL");
         final String voiceModelConfig = System.getenv("VOICE_MODEL_CONFIG");
         final String textToSpeak = System.getenv("TEXT_TO_SPEAK");
+        final String textSpeed = System.getenv().getOrDefault("TEXT_SPEED", "1.0");
         if (voiceModel == null || voiceModel.isBlank()) {
             throw new ConfigurationException("env var VOICE_MODEL is required");
         }
@@ -118,7 +121,7 @@ public class PiperJNITest {
                 piper.textToAudio(voice, textToSpeak, audioSamplesChunks::add);
                 assertFalse(audioSamplesChunks.isEmpty());
                 assertNotEquals(0, audioSamplesChunks.get(0).length);
-                createWAVFile(audioSamplesChunks, sampleRate, Path.of("test-stream.wav"));
+                createWAVFile(audioSamplesChunks, sampleRate, Path.of("test-stream.wav"), textSpeed);
             }
         } finally {
             piper.terminate();
@@ -127,29 +130,41 @@ public class PiperJNITest {
 
     private void createWAVFile(final List<short[]> sampleChunks,
                                final long sampleRate,
-                               final Path outFilePath) {
+                               final Path outFilePath,
+                               final String textSpeed) {
 
-        final int numSamples = sampleChunks.stream().map(c -> c.length).reduce(0, Integer::sum);
-        final javax.sound.sampled.AudioFormat jAudioFormat = new javax.sound.sampled.AudioFormat(javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED,
-                sampleRate,
+        final int numSamples = sampleChunks.stream()
+                .map(c -> c.length)
+                .reduce(0, Integer::sum);
+
+       final double multiplication = Double.parseDouble(textSpeed);
+        float speededSampleRate = sampleRate;
+        //Range: 0.25 to 1.75 -- in 0.25 steps
+        if ((multiplication * 100) % 25 == 0) {
+            //valid multiplication for the sample speed
+            speededSampleRate = (float) ((float) sampleRate * multiplication);
+        }
+        final AudioFormat jAudioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                speededSampleRate,
                 16,
-                1,
+                2,
                 2,
                 sampleRate,
                 false);
+
         final ByteBuffer byteBuffer = ByteBuffer.allocate(numSamples * 2).order(ByteOrder.LITTLE_ENDIAN);
-        for (var chunk : sampleChunks) {
-            for (var sample : chunk) {
+        for (short[] chunk : sampleChunks) {
+            for (short sample : chunk) {
                 byteBuffer.putShort(sample);
             }
         }
+
         final AudioInputStream audioInputStreamTemp = new AudioInputStream(new ByteArrayInputStream(byteBuffer.array()),
                 jAudioFormat,
                 numSamples);
-        try {
-            final FileOutputStream audioFileOutputStream = new FileOutputStream(outFilePath.toFile());
+
+        try (final FileOutputStream audioFileOutputStream = new FileOutputStream(outFilePath.toFile())) {
             AudioSystem.write(audioInputStreamTemp, AudioFileFormat.Type.WAVE, audioFileOutputStream);
-            audioFileOutputStream.close();
         } catch (IOException e) {
             System.err.println("Unable to store sample: " + e.getMessage());
         }
