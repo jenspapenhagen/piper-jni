@@ -21,17 +21,17 @@ jobs:
           docker build --build-arg="RUN_TEST=true" -f dockerfile . -t piperjni_binary:x86_64 --load
           docker run --platform=amd64 -v $(pwd)/dist:/out piperjni_binary:x86_64 bash -c "cp src/main/resources/debian-amd64/*.so* /out/ && cp src/main/resources/*.ort /out/ && cp src/main/resources/*.zip /out/"
       - name: Artifact debian x86_64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: debian-binary-amd64
           path: dist/*.so*
       - name: Artifact eSpeak data
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: espeak-ng-data
           path: dist/*.zip
       - name: Artifact Tashkeel model
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tashkeel-model
           path: dist/*.ort
@@ -55,7 +55,7 @@ jobs:
           docker build -f dockerfile . -t piperjni_binary:arm64 --platform arm64 --load
           DOCKER_BUILDKIT=1 docker run --platform=arm64 -v $(pwd)/dist:/out piperjni_binary:arm64 bash -c "cp src/main/resources/debian-arm64/*.so* /out/"
       - name: Artifact debian arm64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: debian-binary-arm64
           path: dist/*.so*
@@ -79,7 +79,7 @@ jobs:
           docker build -f dockerfile . -t piperjni_binary:armv7l --platform arm --load
           DOCKER_BUILDKIT=1 docker run --platform=arm -v $(pwd)/dist:/out piperjni_binary:armv7l bash -c "cp src/main/resources/debian-armv7l/*.so* /out/"
       - name: Artifact debian armv7l
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: debian-binary-armv7l
           path: dist/*.so*
@@ -108,7 +108,7 @@ jobs:
         run: |
           mv src\main\resources\win-amd64\*.dll .\dist\
       - name: Artifact windows x86_64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-binary-x86_64
           path: dist/*.dll
@@ -132,7 +132,7 @@ jobs:
           ./build_macos.sh amd64
           mv src/main/resources/macos-amd64/*.dylib dist/
       - name: Artifact macos amd64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-binary-amd64
           path: dist/*.dylib
@@ -155,7 +155,7 @@ jobs:
           ./build_macos.sh arm64
           mv src/main/resources/macos-arm64/*.dylib dist/
       - name: Artifact macos arm64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-binary-arm64
           path: dist/*.dylib
